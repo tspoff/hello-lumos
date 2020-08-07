@@ -22,17 +22,21 @@ export const DataManager = ({ children }) => {
 
   const fetchCkbBalance = async (activeAccount, balanceDispatch) => {
     if (activeAccount) {
-      const balance = await dappService.fetchCkbBalance(
-        activeAccount.lockScript
-      );
-      balanceDispatch({
-        type: BalanceActions.SetCkbBalance,
-        lockHash: activeAccount.lockHash,
-        balance: balance,
-      });
+      try {
+        const balance = await dappService.fetchCkbBalance(
+          activeAccount.lockScript
+        );
+
+        balanceDispatch({
+          type: BalanceActions.SetCkbBalance,
+          lockHash: activeAccount.lockHash,
+          balance: balance,
+        });
+      } catch (error) {
+        console.warn("fetchCkbBalance", error);
+      }
     }
   };
-
 
   // Get accounts from wallet
   useEffect(() => {
@@ -52,7 +56,6 @@ export const DataManager = ({ children }) => {
     }
   }, [walletDispatch]);
 
-
   // Fetch CKB Balance on active account change
   useEffect(() => {
     if (activeAccount) {
@@ -64,7 +67,7 @@ export const DataManager = ({ children }) => {
 
   //Fetch tracked transaction status + ckb balance on block update
   useInterval(async () => {
-    const latestBlock = await (await dappService.getLatestBlock()).data;
+    const latestBlock = await dappService.getLatestBlock();
     const pendingTx = getPendingTx(txTrackerState.trackedTx);
 
     if (latestBlock > txTrackerState.lastFetchedBlock && pendingTx.length > 0) {
@@ -73,9 +76,7 @@ export const DataManager = ({ children }) => {
         latestBlock,
       });
 
-      const txStatuses = await (
-        await dappService.fetchTransactionStatuses(pendingTx)
-      ).data;
+      const txStatuses = await dappService.fetchTransactionStatuses(pendingTx);
       txTrackerDispatch({
         type: TxTrackerActions.SetStatuses,
         txMap: txStatuses,

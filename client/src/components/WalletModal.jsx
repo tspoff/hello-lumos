@@ -86,12 +86,13 @@ const WalletModal = () => {
     const tx = modalState.walletModal.txToSign;
     if (!tx) return;
     const signatures = await walletService.signTx(tx);
-    const result = await dappService.transferCkb(tx.params, signatures);
 
-    if (result.data) {
+    try {
+      const txHash = await dappService.transferCkb(tx.params, signatures);
+
       txTrackerDispatch({
         type: TxTrackerActions.SetTrackedTxStatus,
-        txHash: result.data,
+        txHash,
         txStatus: TxStatus.PENDING,
       });
 
@@ -100,12 +101,12 @@ const WalletModal = () => {
         modalName: Modals.walletModal,
         newState: { visible: false },
       });
-    } else {
-      console.warn(result.error);
+    } catch (error) {
+      console.error(error);
       modalDispatch({
         type: ModalActions.setError,
         modalName: Modals.walletModal,
-        error: result.error,
+        error,
       });
     }
   };
@@ -193,7 +194,7 @@ const WalletModal = () => {
     return (
       <React.Fragment>
         <CenteredRow>
-          <AddressView address={walletText.address} />
+          <AddressView address={walletText.address} copyButton />
         </CenteredRow>
         <CenteredRow>
           <p>
@@ -216,8 +217,8 @@ const WalletModal = () => {
       <ModalWrapper>
         <Grid>
           <HeaderRow>
-            <Col size={4}>{walletText.title}</Col>
-            <Col size={1}>
+            <Col size={14}>{walletText.title}</Col>
+            <Col size={2}>
               <FontAwesomeIcon onClick={dismissModal} icon={faTimes} />
             </Col>
           </HeaderRow>

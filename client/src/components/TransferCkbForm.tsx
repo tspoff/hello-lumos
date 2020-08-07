@@ -14,6 +14,7 @@ import { BalanceContext } from "../stores/BalanceStore";
 import { getConfig } from "../config/lumosConfig";
 import { ModalContext, ModalActions, Modals, WalletModalPanels } from "../stores/ModalStore";
 import { TransactionStatusList } from "./TransactionStatusList";
+import { toShannons } from "../utils/formatters";
 
 type Inputs = {
   recipientAddress: string;
@@ -33,7 +34,7 @@ const TransferCkbForm = () => {
 
     const txSkeleton = await dappService.buildTransferCkbTx(
       walletState.activeAccount.address,
-      BigInt(data.amount),
+      toShannons(data.amount),
       data.recipientAddress,
       defaultTxFee
     );
@@ -62,10 +63,11 @@ const TransferCkbForm = () => {
         {errors.recipientAddress && (
           <FormError>Please enter recipient address</FormError>
         )}
-        <label htmlFor="amount">Amount (Shannons)</label>
+        <label htmlFor="amount">Amount</label>
         <FormInput
           type="number"
           name="amount"
+          step="0.00000001"
           ref={register({ required: true })}
         />
         {errors.amount && <FormError>Please enter amount</FormError>}
