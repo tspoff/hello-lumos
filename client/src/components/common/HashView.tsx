@@ -18,8 +18,6 @@ const ItemWrapper = styled.div`
   justify-content: space-evenly;
 `;
 
-
-
 const HashView = (props: Props) => {
   console.log(props);
   return (
