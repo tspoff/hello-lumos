@@ -216,8 +216,8 @@ const WalletModal = () => {
       <ModalWrapper>
         <Grid>
           <HeaderRow>
-            <Col size={4}>{walletText.title}</Col>
-            <Col size={1}>
+            <Col size={14}>{walletText.title}</Col>
+            <Col size={2}>
               <FontAwesomeIcon onClick={dismissModal} icon={faTimes} />
             </Col>
           </HeaderRow>

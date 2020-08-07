@@ -1,25 +1,39 @@
 import React from "react";
+import styled from "styled-components";
 import { shortenAddress } from "../../utils/formatters";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCopy } from "@fortawesome/free-solid-svg-icons";
-import { Row, Col } from "./Grid";
+import { CopyButton } from "./CopyButton";
+import { Col } from "./Grid";
 
+const Wrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 interface Props {
   hash: string;
 }
 
+const ItemWrapper = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+`;
+
+const CopyButtonWrapper = styled(Col)`
+  padding-left: 10px;
+`;
+
 const HashView = (props: Props) => {
+  console.log(props);
   return (
     <React.Fragment>
-      <Row>
-        <Col>{shortenAddress(props.hash.toString())}</Col>
-        <Col>
-          <CopyToClipboard text={props.hash}>
-            <FontAwesomeIcon icon={faCopy} />
-          </CopyToClipboard>
-        </Col>
-      </Row>
+      <Wrapper>
+        <ItemWrapper>
+        <Col size={6}>{shortenAddress(props.hash.toString())}</Col>
+        <CopyButtonWrapper size={1}>
+          <CopyButton content={props.hash} />
+        </CopyButtonWrapper>
+        </ItemWrapper>
+      </Wrapper>
     </React.Fragment>
   );
 };
