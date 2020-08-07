@@ -193,7 +193,7 @@ const WalletModal = () => {
     return (
       <React.Fragment>
         <CenteredRow>
-          <AddressView address={walletText.address} />
+          <AddressView address={walletText.address} copyButton/>
         </CenteredRow>
         <CenteredRow>
           <p>

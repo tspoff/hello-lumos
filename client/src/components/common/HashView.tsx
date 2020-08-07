@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { shortenAddress } from "../../utils/formatters";
-import { CopyButton } from "./CopyButton";
+import { CopyButton, CopyButtonWrapper } from "./CopyButton";
 import { Col } from "./Grid";
 
 const Wrapper = styled.div`
@@ -18,9 +18,7 @@ const ItemWrapper = styled.div`
   justify-content: space-evenly;
 `;
 
-const CopyButtonWrapper = styled(Col)`
-  padding-left: 10px;
-`;
+
 
 const HashView = (props: Props) => {
   console.log(props);

@@ -3,11 +3,10 @@ import styled from "styled-components";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import { Col } from "./Grid";
 
-const Button = styled.button`
-  margin: 0px;
-  padding: 0px;
-  border: 0px;
+export const CopyButtonWrapper = styled(Col)`
+  padding-left: 10px;
 `;
 
 interface Props {

@@ -31,13 +31,13 @@ const CkbTransferView = (props: Props) => {
     <Wrapper>
       <RecipientRow>
         <RecipientRowItem>
-          <AddressView shorten address={props.sender} />
+          <AddressView shorten copyButton address={props.sender} />
         </RecipientRowItem>
         <RecipientRowItem>
           <FontAwesomeIcon icon={faArrowRight} />
         </RecipientRowItem>
         <RecipientRowItem>
-          <AddressView shorten address={props.recipient} />
+          <AddressView shorten copyButton address={props.recipient} />
         </RecipientRowItem>
         <RecipientRowItem>
           <CkbValue amount={props.amount} />
