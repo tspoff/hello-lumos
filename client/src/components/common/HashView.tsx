@@ -19,7 +19,6 @@ const ItemWrapper = styled.div`
 `;
 
 const HashView = (props: Props) => {
-  console.log(props);
   return (
     <React.Fragment>
       <Wrapper>

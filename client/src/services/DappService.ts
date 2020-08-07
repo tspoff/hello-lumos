@@ -1,6 +1,8 @@
 import axios from "axios";
 import { HexString, Hash, Address, Script } from "@ckb-lumos/base";
 import { TransactionSkeletonType } from "@ckb-lumos/helpers";
+import { Api, ResponseCode } from "./Api";
+import { TxMap } from "../stores/TxTrackerStore";
 
 export interface CkbTransferParams {
   sender: string;
@@ -27,12 +29,11 @@ class DappService {
     this.dappServerUri = dappServerUri;
   }
 
-  async fetchCkbBalance(lockScript: Script) {
-    const response = await axios.post(`${this.dappServerUri}/ckb/get-balance`, {
+  async fetchCkbBalance(lockScript: Script): Promise<BigInt> {
+    const response = await Api.post(this.dappServerUri, "/ckb/get-balance", {
       lockScript,
     });
-    const data = JSON.parse(response.data);
-    return BigInt(data.balance);
+    return BigInt(response.payload.balance);
   }
 
   async buildTransferCkbTx(
@@ -41,17 +42,20 @@ class DappService {
 
     recipient: Address,
     txFee: BigInt
-  ) {
-    const response = await axios.post(
-      `${this.dappServerUri}/ckb/build-transfer`,
-      {
-        sender,
-        amount: amount.toString(),
-        recipient,
-        txFee: txFee.toString(),
-      }
-    );
-    let data: CkbTransfer = JSON.parse(response.data);
+  ): Promise<{
+    params: CkbTransferParams;
+    txSkeleton: TransactionSkeletonType;
+  }> {
+    const response = await Api.post(this.dappServerUri, "/ckb/build-transfer", {
+      sender,
+      amount: amount.toString(),
+      recipient,
+      txFee: txFee.toString(),
+    });
+
+    console.log(response);
+
+    const data = response.payload;
     data.params = parseCkbTransferParams(data.params);
     return data;
   }
@@ -59,40 +63,30 @@ class DappService {
   async transferCkb(
     params: CkbTransferParams,
     signatures: HexString[]
-  ): Promise<{error?: string, data?: Hash}> {
-    try {
-      const response = await axios.post(`${this.dappServerUri}/ckb/transfer`, {
-        params: stringifyCkbTransferParams(params),
-        signatures,
-      });
-      const data = JSON.parse(response.data);
-      return {
-        data: data.txHash as Hash
-      }
-    } catch (error) {
-      return {
-        error: JSON.parse(error.request.response).error
-      }
-    }
+  ): Promise<Hash> {
+    const response = await Api.post(this.dappServerUri, "/ckb/transfer", {
+      params: stringifyCkbTransferParams(params),
+      signatures,
+    });
+
+    return response.payload.txHash as Hash;
   }
 
-  async getLatestBlock() {
-    const response = await axios.get(`${this.dappServerUri}/ckb/latest-block`);
-    const data = JSON.parse(response.data);
-
-    return {
-      data: Number(data.blockNumber)
-    }
+  async getLatestBlock(): Promise<Number> {
+    const response = await Api.get(this.dappServerUri, "/ckb/latest-block");
+    return Number(response.payload.blockNumber);
   }
 
   async fetchTransactionStatuses(txHashes: Hash[]) {
-    const response = await axios.post(`${this.dappServerUri}/ckb/fetch-tx-status`, {
-      txHashes
-    });
-    const data = JSON.parse(response.data);
-    return {
-      data: data.txStatuses
-    }
+    console.log('fetchTransactionStatuses',txHashes );
+    const response = await Api.post(
+      this.dappServerUri,
+      "/ckb/fetch-tx-status",
+      {
+        txHashes,
+      }
+    );
+    return response.payload.txStatuses as TxMap;
   }
 }
 
@@ -101,18 +95,18 @@ export const parseCkbTransferParams = (params) => {
     sender: params.sender,
     amount: BigInt(params.amount),
     recipient: params.recipient,
-    txFee: BigInt(params.txFee)
-  }
-}
+    txFee: BigInt(params.txFee),
+  };
+};
 
 export const stringifyCkbTransferParams = (params: CkbTransferParams) => {
   return {
     sender: params.sender,
     amount: params.amount.toString(),
     recipient: params.recipient,
-    txFee: params.txFee.toString()
-  }
-}
+    txFee: params.txFee.toString(),
+  };
+};
 
 export const dappService = new DappService(
   process.env.REACT_APP_DAPP_SERVER_URI
