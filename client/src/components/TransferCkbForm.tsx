@@ -29,13 +29,13 @@ const TransferCkbForm = () => {
   const defaultTxFee = getConfig().DEFAULT_TX_FEE;
 
   const { register, handleSubmit, watch, errors } = useForm<Inputs>();
-  const onSubmit = async (data) => {
+  const onSubmit = async (formData) => {
     if (!walletState.activeAccount) return;
 
     const txSkeleton = await dappService.buildTransferCkbTx(
       walletState.activeAccount.address,
-      toShannons(data.amount),
-      data.recipientAddress,
+      formData.recipientAddress,
+      toShannons(formData.amount),
       defaultTxFee
     );
 

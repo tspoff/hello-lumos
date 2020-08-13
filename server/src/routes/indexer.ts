@@ -1,12 +1,18 @@
 import express from "express";
-import {indexerService} from "../index";
+import { indexer } from "../index";
+import { Cell } from "ckb-js-toolkit";
 
 const routes = express.Router();
 
-routes.post("/get-cells", (req: any, res) => {
-  indexerService.collectCells(req.body).then((cells) => {
-    return res.json(JSON.stringify(cells));
-  });
+routes.post("/get-cells", async (req: any, res) => {
+  const collector = indexer.collector(req.body);
+
+  const cells: Cell[] = [];
+  for await (const cell of collector.collect()) {
+    cells.push(cell);
+  }
+
+  return res.json(JSON.stringify(cells));
 });
 
 export default routes;

@@ -38,9 +38,8 @@ class DappService {
 
   async buildTransferCkbTx(
     sender: Address,
-    amount: BigInt,
-
     recipient: Address,
+    amount: BigInt,
     txFee: BigInt
   ): Promise<{
     params: CkbTransferParams;
@@ -48,12 +47,10 @@ class DappService {
   }> {
     const response = await Api.post(this.dappServerUri, "/ckb/build-transfer", {
       sender,
-      amount: amount.toString(),
       recipient,
+      amount: amount.toString(),
       txFee: txFee.toString(),
     });
-
-    console.log(response);
 
     const data = response.payload;
     data.params = parseCkbTransferParams(data.params);
@@ -64,7 +61,7 @@ class DappService {
     params: CkbTransferParams,
     signatures: HexString[]
   ): Promise<Hash> {
-    const response = await Api.post(this.dappServerUri, "/ckb/transfer", {
+    const response = await Api.post(this.dappServerUri, "/ckb/send-transfer", {
       params: stringifyCkbTransferParams(params),
       signatures,
     });
@@ -73,7 +70,7 @@ class DappService {
   }
 
   async getLatestBlock(): Promise<Number> {
-    const response = await Api.get(this.dappServerUri, "/ckb/latest-block");
+    const response = await Api.get(this.dappServerUri, "/latest-block");
     return Number(response.payload.blockNumber);
   }
 
@@ -81,7 +78,7 @@ class DappService {
     console.log('fetchTransactionStatuses',txHashes );
     const response = await Api.post(
       this.dappServerUri,
-      "/ckb/fetch-tx-status",
+      "/fetch-tx-status",
       {
         txHashes,
       }

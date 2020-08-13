@@ -27,6 +27,8 @@ export const DataManager = ({ children }) => {
           activeAccount.lockScript
         );
 
+        console.log("fetchCkbBalance", activeAccount, balance);
+
         balanceDispatch({
           type: BalanceActions.SetCkbBalance,
           lockHash: activeAccount.lockHash,
@@ -68,23 +70,31 @@ export const DataManager = ({ children }) => {
   //Fetch tracked transaction status + ckb balance on block update
   useInterval(async () => {
     const latestBlock = await dappService.getLatestBlock();
-    const pendingTx = getPendingTx(txTrackerState.trackedTx);
 
-    if (latestBlock > txTrackerState.lastFetchedBlock && pendingTx.length > 0) {
+    if (latestBlock > txTrackerState.lastFetchedBlock) {
+      console.log('lastFetched', txTrackerState.lastFetchedBlock);
+      console.log('latestBlock', latestBlock);
       txTrackerDispatch({
         type: TxTrackerActions.SetLatestBlock,
         latestBlock,
       });
 
-      const txStatuses = await dappService.fetchTransactionStatuses(pendingTx);
-      txTrackerDispatch({
-        type: TxTrackerActions.SetStatuses,
-        txMap: txStatuses,
-      });
+      const pendingTx = getPendingTx(txTrackerState.trackedTx);
+
+      if (pendingTx.length > 0) {
+        dappService.fetchTransactionStatuses(pendingTx).then(txStatuses => {
+          txTrackerDispatch({
+            type: TxTrackerActions.SetStatuses,
+            txMap: txStatuses,
+          });
+        });
+
+      }
       if (activeAccount) {
-        await fetchCkbBalance(activeAccount, balanceDispatch);
+        fetchCkbBalance(activeAccount, balanceDispatch);
       }
     }
+    
   }, 1000);
 
   return <React.Fragment>{children}</React.Fragment>;

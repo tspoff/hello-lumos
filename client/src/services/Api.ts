@@ -24,6 +24,7 @@ export class Api {
         payload,
       };
     } catch (error) {
+      console.error(JSON.parse(error.request.response).error);
       throw new Error(JSON.parse(error.request.response).error);
     }
   }
