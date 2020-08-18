@@ -1,6 +1,6 @@
 import { Transaction } from "./DappService";
 import { parseAccounts } from "../utils/Account";
-import { fromTxSkeleton } from "../utils/keyperringUtils";
+import { fromTxSkeleton, toRawWitness } from "../utils/keyperringUtils";
 import { HexString } from "@ckb-lumos/base";
 
 class WalletService {
@@ -90,8 +90,9 @@ class WalletService {
         }),
       });
       res = await res.json();
+      console.log(res);
       // @ts-ignore
-      return res.result.tx.witnesses as HexString[]; // Return string array of witnesses
+      return res.result.tx.witnesses.map(witness => toRawWitness(witness)) as HexString[]; // Return string array of witnesses
   }
 
   // signTx(tx: Transaction) {

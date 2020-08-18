@@ -2,7 +2,7 @@ import { indexer, rpc } from "../index";
 import { Script } from "@ckb-lumos/base";
 import { common, secp256k1Blake160 } from "@ckb-lumos/common-scripts";
 import { TransactionSkeleton } from "@ckb-lumos/helpers";
-import { Cell } from "@ckb-lumos/base";
+import { Cell } from "ckb-js-toolkit";
 
 interface CkbTransferParams {
   sender: string;

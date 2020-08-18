@@ -1,6 +1,6 @@
 import express from "express";
 import { indexer } from "../index";
-import { Cell } from "@ckb-lumos/base";
+import { Cell } from "ckb-js-toolkit";
 
 const routes = express.Router();
 

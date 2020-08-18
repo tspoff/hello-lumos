@@ -2,17 +2,16 @@ import {
   HexString,
   Script,
   CellDep,
-  OutPoint,
   DepType,
   Cell,
 } from "@ckb-lumos/base";
-import { API } from "./KeyperringApi";
-import { Transaction } from "../services/DappService";
-import { TransactionSkeletonType } from "@ckb-lumos/helpers";
-import CKB from "@nervosnetwork/ckb-sdk-core";
 
 interface KeyperingTransaction extends CKBComponents.RawTransaction {
   witnesses: any[]
+}
+
+export const toRawWitness = (witness: HexString): HexString => {
+  return '0x' + witness.substring(42);
 }
 
 const fromLumosDepType = (depType: DepType): CKBComponents.DepType => {
