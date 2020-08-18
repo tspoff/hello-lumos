@@ -17,22 +17,23 @@ const CenteredColWithMargin = styled(CenteredCol)`
 interface Props {
   address: string;
   shorten: boolean;
+  identicon?: boolean;
   copyButton?: boolean;
 }
 
 const AddressView = (props: Props) => {
   return (
     <Wrapper>
-      <CenteredCol size={2}>
-        <Identicon value={props.address} />
-      </CenteredCol>
+      {props.identicon && (
+        <CenteredCol size={2}>
+          <Identicon value={props.address} />
+        </CenteredCol>
+      )}
       <CenteredColWithMargin size={4}>
         <p>{props.shorten ? shortenAddress(props.address) : props.address}</p>
       </CenteredColWithMargin>
       <CenteredColWithMargin size={4}>
-        {props.copyButton && (
-            <CopyButton content={props.address} />
-        )}
+        {props.copyButton && <CopyButton content={props.address} />}
       </CenteredColWithMargin>
     </Wrapper>
   );

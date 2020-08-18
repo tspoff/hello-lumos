@@ -21,7 +21,7 @@ interface State {
 
 export enum WalletModalPanels {
   VIEW_ACCOUNT,
-  SIGN_TX,
+  CONNECT_ACCOUNT,
 }
 
 export enum Modals {
@@ -36,7 +36,7 @@ export enum ModalActions {
 const initialState: State = {
   walletModal: {
     visible: false,
-    activePanel: WalletModalPanels.VIEW_ACCOUNT,
+    activePanel: WalletModalPanels.CONNECT_ACCOUNT,
   },
 };
 

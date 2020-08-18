@@ -3,7 +3,6 @@ import express from "express";
 import http from "http";
 import bodyParser from "body-parser";
 import cors from "cors";
-import morgan from "morgan";
 import {
   Indexer,
   TransactionCollector,
@@ -29,7 +28,7 @@ app.use(bodyParser.json());
 // Allow CORS for localhost
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3001",
     credentials: true,
   })
 );

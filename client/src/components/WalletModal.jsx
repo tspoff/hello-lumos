@@ -1,25 +1,12 @@
-import React, { useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
-import JSONPretty from "react-json-pretty";
-import { Grid, Row, Col, CenteredRow, CenteredCol } from "./common/Grid";
+import { Grid, Row, Col, CenteredRow } from "./common/Grid";
 import Modal from "./common/Modal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faTimes,
-  faFileSignature,
-} from "@fortawesome/free-solid-svg-icons";
-import AddressPillbox from "./AddressPillbox";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import AddressView from "./AddressView";
-import CkbTransfer from "./common/CkbTransferView";
-import JSONPrettyMon from "react-json-pretty/dist/monikai";
-import ActionButton from "./common/ActionButton";
 import { walletService } from "../services/WalletService";
-import {
-  WalletActions,
-  WalletContext,
-  setActiveAccount,
-} from "../stores/WalletStore";
+import { WalletActions, WalletContext } from "../stores/WalletStore";
 import {
   Modals,
   ModalActions,
@@ -28,12 +15,7 @@ import {
 } from "../stores/ModalStore";
 import { BalanceContext } from "../stores/BalanceStore";
 import CkbValue from "./common/CkbValue";
-import { dappService } from "../services/DappService";
-import {
-  TxTrackerContext,
-  TxTrackerActions,
-  TxStatus,
-} from "../stores/TxTrackerStore";
+import { WalletConnectCard } from "./WalletConnectCard";
 
 const ModalWrapper = styled.div`
   display: flex;
@@ -46,33 +28,20 @@ const HeaderRow = styled(Row)`
   border-bottom: 1px solid black;
 `;
 
-const ContentRow = styled(Row)`
-  padding: 10px 0px;
-`;
-
-const ContentCentered = styled.div`
-  text-align: center;
-  margin: auto;
-`;
-
-const JsonWrapper = styled.div`
-  text-align: left;
-  max-height: 400px;
-  width: 64vh;
-  margin: auto;
-  padding-left: 10px;
-  overflow: scroll;
-`;
-
 const ErrorMsg = styled.p`
   color: red;
 `;
 
+const ContentWrapper = styled.div`
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+`;
+
 const WalletModal = () => {
-  const { walletState } = useContext(WalletContext);
+  const { walletState, walletDispatch } = useContext(WalletContext);
   const { balanceState } = useContext(BalanceContext);
   const { modalState, modalDispatch } = useContext(ModalContext);
-  const { txTrackerDispatch } = useContext(TxTrackerContext);
 
   const dismissModal = () => {
     modalDispatch({
@@ -82,41 +51,51 @@ const WalletModal = () => {
     });
   };
 
-  const signProposal = async () => {
-    const tx = modalState.walletModal.txToSign;
-    if (!tx) return;
-    const signatures = await walletService.signTx(tx);
-
-    try {
-      const txHash = await dappService.transferCkb(tx.params, signatures);
-
-      txTrackerDispatch({
-        type: TxTrackerActions.SetTrackedTxStatus,
-        txHash,
-        txStatus: TxStatus.PENDING,
-      });
-
-      modalDispatch({
-        type: ModalActions.setModalState,
-        modalName: Modals.walletModal,
-        newState: { visible: false },
-      });
-    } catch (error) {
-      console.error(error);
-      modalDispatch({
-        type: ModalActions.setError,
-        modalName: Modals.walletModal,
-        error,
-      });
-    }
-  };
-
   let walletText = {
     address: "-",
     pubKeyHash: "-",
     lockHash: "-",
     balance: "-",
     title: "-",
+  };
+
+  const keyperringAuthRequest = async () => {
+    const token = await walletService.requestAuth(
+      "Hello Lumos - Connection Request"
+    );
+    if (!token) {
+      modalDispatch({
+        type: ModalActions.setError,
+        modalName: Modal.walletModal,
+        error: "Wallet authorization refused",
+      });
+    }
+
+    walletService.setToken(token);
+
+    const accounts = await walletService.getAccounts();
+    const activeAccount = accounts[0]; // Secp256k1 lock script for address
+
+    console.log(accounts);
+    console.log(activeAccount);
+
+    // Add account info to local store
+    walletDispatch({
+      type: WalletActions.addAccounts,
+      accounts,
+    });
+
+    walletDispatch({
+      type: WalletActions.setActiveAccount,
+      lockHash: activeAccount.lockHash,
+    });
+
+    // Change modal to show connection success
+    modalDispatch({
+      type: ModalActions.setModalState,
+      modalName: Modals.walletModal,
+      newState: { activePanel: WalletModalPanels.VIEW_ACCOUNT },
+    });
   };
 
   const account = walletState.activeAccount;
@@ -135,8 +114,8 @@ const WalletModal = () => {
   }
 
   switch (modalState.walletModal.activePanel) {
-    case WalletModalPanels.SIGN_TX:
-      walletText.title = "Signature Request";
+    case WalletModalPanels.CONNECT_ACCOUNT:
+      walletText.title = "Connect to Wallet";
       break;
     case WalletModalPanels.VIEW_ACCOUNT:
       walletText.title = "Active Account";
@@ -147,9 +126,8 @@ const WalletModal = () => {
 
   const renderActivePanel = () => {
     switch (modalState.walletModal.activePanel) {
-      case WalletModalPanels.SIGN_TX:
-        walletText.title = "Transfer CKB";
-        return renderWalletSignPanel();
+      case WalletModalPanels.CONNECT_ACCOUNT:
+        return renderWalletConnectPanel();
       case WalletModalPanels.VIEW_ACCOUNT:
         return renderWalletInfoPanel();
       default:
@@ -157,35 +135,15 @@ const WalletModal = () => {
     }
   };
 
-  const renderWalletSignPanel = () => {
-    const { params, txSkeleton } = modalState.walletModal.txToSign;
-
+  const renderWalletConnectPanel = () => {
     return (
       <React.Fragment>
-        <ContentRow>
-          <ContentCentered>
-            <h4>CKB Transfer</h4>
-            <CkbTransfer
-              sender={params.sender}
-              recipient={params.recipient}
-              amount={params.amount.toString()}
-            />
-          </ContentCentered>
-        </ContentRow>
-        <ContentRow>
-          <ContentCentered>
-            <h4>Transaction Details</h4>
-            <JsonWrapper>
-              <JSONPretty
-                data={JSON.stringify(txSkeleton)}
-                theme={JSONPrettyMon}
-              />
-            </JsonWrapper>
-            <ActionButton onClick={signProposal}>
-              Approve <FontAwesomeIcon icon={faFileSignature} />
-            </ActionButton>
-          </ContentCentered>
-        </ContentRow>
+        <CenteredRow>
+          <WalletConnectCard
+            name={"Keypering"}
+            onClick={keyperringAuthRequest}
+          />
+        </CenteredRow>
       </React.Fragment>
     );
   };
@@ -194,7 +152,7 @@ const WalletModal = () => {
     return (
       <React.Fragment>
         <CenteredRow>
-          <AddressView address={walletText.address} copyButton />
+          <AddressView address={walletText.address} copyButton identicon />
         </CenteredRow>
         <CenteredRow>
           <p>
@@ -217,12 +175,14 @@ const WalletModal = () => {
       <ModalWrapper>
         <Grid>
           <HeaderRow>
-            <Col size={14}>{walletText.title}</Col>
-            <Col size={2}>
+            <Col size={15}>
+              <bold>{walletText.title}</bold>
+            </Col>
+            <Col size={1}>
               <FontAwesomeIcon onClick={dismissModal} icon={faTimes} />
             </Col>
           </HeaderRow>
-          {renderActivePanel()}
+          <ContentWrapper>{renderActivePanel()}</ContentWrapper>
           {walletError && (
             <CenteredRow>
               <ErrorMsg>{walletError.toString()}</ErrorMsg>

@@ -40,24 +40,6 @@ export const DataManager = ({ children }) => {
     }
   };
 
-  // Get accounts from wallet
-  useEffect(() => {
-    const activeAccount = walletService.getActiveAccount();
-    const accounts = walletService.getAccounts();
-
-    walletDispatch({
-      type: WalletActions.addAccounts,
-      accounts,
-    });
-
-    if (activeAccount) {
-      walletDispatch({
-        type: WalletActions.setActiveAccount,
-        address: activeAccount.address,
-      });
-    }
-  }, [walletDispatch]);
-
   // Fetch CKB Balance on active account change
   useEffect(() => {
     if (activeAccount) {
