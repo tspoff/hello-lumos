@@ -8,13 +8,17 @@ import {
   Form,
 } from "./common/Form";
 import Button from "./common/Button";
-import { dappService } from "../services/DappService";
+import { dappService, CkbTransferParams } from "../services/DappService";
 import { WalletContext } from "../stores/WalletStore";
-import { BalanceContext } from "../stores/BalanceStore";
 import { getConfig } from "../config/lumosConfig";
-import { ModalContext, ModalActions, Modals, WalletModalPanels } from "../stores/ModalStore";
 import { TransactionStatusList } from "./TransactionStatusList";
 import { toShannons } from "../utils/formatters";
+import { walletService } from "../services/WalletService";
+import {
+  TxTrackerContext,
+  TxTrackerActions,
+  TxStatus,
+} from "../stores/TxTrackerStore";
 
 type Inputs = {
   recipientAddress: string;
@@ -22,9 +26,8 @@ type Inputs = {
 };
 
 const TransferCkbForm = () => {
-  const { modalDispatch } = useContext(ModalContext);
   const { walletState } = useContext(WalletContext);
-  const { balanceState } = useContext(BalanceContext);
+  const { txTrackerState, txTrackerDispatch } = useContext(TxTrackerContext);
 
   const defaultTxFee = getConfig().DEFAULT_TX_FEE;
 
@@ -32,22 +35,26 @@ const TransferCkbForm = () => {
   const onSubmit = async (formData) => {
     if (!walletState.activeAccount) return;
 
-    const txSkeleton = await dappService.buildTransferCkbTx(
-      walletState.activeAccount.address,
-      formData.recipientAddress,
-      toShannons(formData.amount),
-      defaultTxFee
-    );
+    const params: CkbTransferParams = {
+      sender: walletState.activeAccount.address,
+      recipient: formData.recipientAddress,
+      amount: toShannons(formData.amount),
+      txFee: defaultTxFee,
+    };
 
-    modalDispatch({
-      type: ModalActions.setModalState,
-      modalName: Modals.walletModal,
-      newState: {
-        visible: true,
-        activePanel: WalletModalPanels.SIGN_TX,
-        txToSign: txSkeleton
-      }
-    })
+    const tx = await dappService.buildTransferCkbTx(params);
+
+    const signatures = await walletService.signTransaction(
+      tx,
+      walletState.activeAccount.lockHash
+    );
+    const txHash = await dappService.transferCkb(params, signatures);
+
+    txTrackerDispatch({
+      type: TxTrackerActions.SetTrackedTxStatus,
+      txHash,
+      txStatus: TxStatus.PENDING,
+    });
   };
 
   return (

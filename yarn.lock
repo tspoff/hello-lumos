@@ -1466,7 +1466,24 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@nervosnetwork/ckb-sdk-utils@^0.34.0":
+"@nervosnetwork/ckb-sdk-core@^0.34.0":
+  version "0.34.0"
+  resolved "https://registry.yarnpkg.com/@nervosnetwork/ckb-sdk-core/-/ckb-sdk-core-0.34.0.tgz#d68f5ce98cb419457327dd6168a40f3190186cb5"
+  integrity sha512-+ZDAZ1R/ILHyQsZRbG5qHir62gNZdfZCkGoU8vgTrKGl7hPHwP7L0+8bgyO1tVxg5oO/UGTRur+Egs4XeiwFOg==
+  dependencies:
+    "@nervosnetwork/ckb-sdk-rpc" "0.34.0"
+    "@nervosnetwork/ckb-sdk-utils" "0.34.0"
+    "@nervosnetwork/ckb-types" "0.34.0"
+
+"@nervosnetwork/ckb-sdk-rpc@0.34.0":
+  version "0.34.0"
+  resolved "https://registry.yarnpkg.com/@nervosnetwork/ckb-sdk-rpc/-/ckb-sdk-rpc-0.34.0.tgz#6b1d795a7575205ad852809aacbe9aa84fc89e12"
+  integrity sha512-/fz7ICAfA2TqOW4WDjHlca47GAcLJztIqbUhIiTIX46z7IefVVVr2uPaJxjo60WQVQFPJ5pN56QFMAgxxEoKbQ==
+  dependencies:
+    "@nervosnetwork/ckb-sdk-utils" "0.34.0"
+    axios "0.19.2"
+
+"@nervosnetwork/ckb-sdk-utils@0.34.0", "@nervosnetwork/ckb-sdk-utils@^0.34.0":
   version "0.34.0"
   resolved "https://registry.yarnpkg.com/@nervosnetwork/ckb-sdk-utils/-/ckb-sdk-utils-0.34.0.tgz#12e1b8c053d5bfa0a5ea0b542272faa44e275cbd"
   integrity sha512-hfoXTxsARuBstgXc1Oxe2VNoDry5qcwqpL4wYhg57ucsDkxrZ8E/cKcNwDd5f3orXHCHG88ReNcqZRCri9EBPA==
@@ -2587,7 +2604,7 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.10.0.tgz#a17b3a8ea811060e74d47d306122400ad4497ae2"
   integrity sha512-3YDiu347mtVtjpyV3u5kVqQLP242c06zwDOgpeRnybmXlYYsLbtTrUBUm8i8srONt+FWobl5aibnU1030PeeuA==
 
-axios@^0.19.2:
+axios@0.19.2, axios@^0.19.2:
   version "0.19.2"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.19.2.tgz#3ea36c5d8818d0d5f8a8a97a6d36b86cdc00cb27"
   integrity sha512-fjgm5MvRHLhx+osE2xoekY70AhARk3a6hkN+3Io1jc00jtquGvxYlKlsFUhmUET0V5te6CcZI7lcv2Ym61mjHA==

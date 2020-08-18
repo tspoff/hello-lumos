@@ -15,11 +15,13 @@ export type Transaction = GenericTransaction | CkbTransfer;
 
 export interface GenericTransaction {
   params: any;
+  description: string;
   txSkeleton: TransactionSkeletonType;
 }
 
 export interface CkbTransfer {
   params: CkbTransferParams;
+  description: string;
   txSkeleton: TransactionSkeletonType;
 }
 
@@ -37,23 +39,18 @@ class DappService {
   }
 
   async buildTransferCkbTx(
-    sender: Address,
-    recipient: Address,
-    amount: BigInt,
-    txFee: BigInt
-  ): Promise<{
-    params: CkbTransferParams;
-    txSkeleton: TransactionSkeletonType;
-  }> {
+    params: CkbTransferParams
+  ): Promise<CkbTransfer> {
     const response = await Api.post(this.dappServerUri, "/ckb/build-transfer", {
-      sender,
-      recipient,
-      amount: amount.toString(),
-      txFee: txFee.toString(),
+      sender: params.sender,
+      recipient: params.recipient,
+      amount: params.amount.toString(),
+      txFee: params.txFee.toString(),
     });
 
     const data = response.payload;
     data.params = parseCkbTransferParams(data.params);
+    data.description = 'Hello Lumos - CKB Transfer Request' // Description to display on Keyperring
     return data;
   }
 

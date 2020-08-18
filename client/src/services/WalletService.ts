@@ -1,67 +1,109 @@
-import { generateAccountFromPrivateKey, Account } from "../utils/Account";
-import { TransactionSkeletonType } from "@ckb-lumos/helpers";
-import { Address, HexString } from "@ckb-lumos/base";
-import { AccountMap } from "../stores/WalletStore";
-import { arrayBufferToHex, secpSign } from "../utils/ckbUtils";
 import { Transaction } from "./DappService";
+import { parseAccounts } from "../utils/Account";
+import { fromTxSkeleton, toRawWitness } from "../utils/keyperringUtils";
+import { HexString } from "@ckb-lumos/base";
 
 class WalletService {
   walletUri: string;
-  accounts: AccountMap;
-  activeAccount: Account | null;
+  token: string | undefined;
 
-  constructor(walletUrl, isLocal = true) {
+  constructor(walletUrl) {
     this.walletUri = walletUrl;
-    this.accounts = {} as AccountMap;
-    this.activeAccount = null;
-    if (isLocal) {
-      const account = WalletService.generateAccountFromConfig();
-      this.addAccount(account);
-      this.setActiveAccount(account.address);
+    this.token = undefined;
+  }
+
+  async requestAuth(description): Promise<string | undefined> {
+    try {
+      let res = await fetch(this.walletUri, {
+        method: "POST",
+        body: JSON.stringify({
+          id: 2,
+          jsonrpc: "2.0",
+          method: "auth",
+          params: {
+            description,
+          },
+        }),
+      });
+      res = await res.json();
+      // @ts-ignore
+      return res.result.token as string;
+    } catch (error) {
+      console.error("error", error);
     }
   }
 
-  getActiveAccount(): Account | null {
-    return this.activeAccount;
+  setToken(token: string) {
+    this.token = token;
   }
 
-  getAccounts(): AccountMap {
-    return this.accounts;
-  }
-
-  private addAccount(account: Account) {
-    this.accounts[account.address] = account;
-  }
-
-  private setActiveAccount(address: Address) {
-    if (!this.accounts[address]) {
-      throw new Error(
-        `Attempting to set active account to address ${address} which is not stored in wallet`
-      );
+  async getAccounts(): Promise<Account[]> {
+    if (!this.token) {
+      throw new Error("Wallet permission token not obtained");
     }
-    this.activeAccount = this.accounts[address];
+    try {
+      let res = await fetch(this.walletUri, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({
+          id: 3,
+          jsonrpc: "2.0",
+          method: "query_addresses",
+        }),
+      });
+      res = await res.json();
+      console.log(res);
+      // @ts-ignore
+      return parseAccounts(res.result.addresses);
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  static generateAccountFromConfig() {
-    if (!process.env.REACT_APP_PRIVATE_KEY)
-      throw new Error("No environment variable found for private key");
-    const privKey = process.env.REACT_APP_PRIVATE_KEY;
-    return generateAccountFromPrivateKey(privKey);
+  async signTransaction(tx: Transaction, lockHash): Promise<HexString[]> {
+      const rawTx = fromTxSkeleton(tx.txSkeleton);
+      console.log(tx.txSkeleton);
+
+      rawTx.witnesses[0] = {
+        lock: "",
+        inputType: "",
+        outputType: "",
+      };
+
+      console.log(rawTx);
+      let res = await fetch(this.walletUri, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({
+          id: 4,
+          jsonrpc: "2.0",
+          method: "sign_transaction",
+          params: {
+            tx: rawTx,
+            lockHash,
+            description: tx.description,
+          },
+        }),
+      });
+      res = await res.json();
+      console.log(res);
+      // @ts-ignore
+      return res.result.tx.witnesses.map(witness => toRawWitness(witness)) as HexString[]; // Return string array of witnesses
   }
 
-  private sign(message: any) {
-    return arrayBufferToHex(
-      secpSign(this.activeAccount?.privKey, message).toArrayBuffer()
-    );
-  }
-
-  signTx(tx: Transaction) {
-    const signatures: HexString[] = [];
-    tx.txSkeleton.signingEntries.forEach((entry) => {
-      signatures.push(this.sign(entry.message));
-    });
-    return signatures;
-  }
+  // signTx(tx: Transaction) {
+  //   const signatures: HexString[] = [];
+  //   tx.txSkeleton.signingEntries.forEach((entry) => {
+  //     signatures.push(this.sign(entry.message));
+  //   });
+  //   return signatures;
+  // }
 }
 
-export const walletService = new WalletService("local");
+export const walletService = new WalletService(
+  process.env.REACT_APP_KEYPERRING_URI
+);

@@ -31,27 +31,27 @@ export const reducer = (state, action) => {
     case WalletActions.addAccounts:
       return addAccounts(state, action.accounts);
     case WalletActions.setActiveAccount:
-      return setActiveAccount(state, action.address);
+      return setActiveAccount(state, action.lockHash);
     default:
       return state;
   }
 };
 
-export const addAccounts = (state, accounts: AccountMap) => {
+export const addAccounts = (state, accounts: Account[]) => {
   const newState = _.cloneDeep(state);
   Object.keys(accounts).forEach(key => {
-    newState.accounts[accounts[key].address] = accounts[key];
+    newState.accounts[accounts[key].lockHash] = accounts[key];
   });
   return newState;
 };
 
-export const setActiveAccount = (state: State, address: string) => {
-  const account = state.accounts[address];
+export const setActiveAccount = (state: State, lockHash: string) => {
+  const account = state.accounts[lockHash];
   const newState = _.cloneDeep(state);
   if (account) {
     newState.activeAccount = account;
   } else {
-    throw new Error(`Account with address ${address} not found`);
+    throw new Error(`Account with lockHash ${lockHash} not found`);
   }
   return newState;
 };

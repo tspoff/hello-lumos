@@ -4,16 +4,46 @@ import {
   pubkeyToAddress,
 } from "@nervosnetwork/ckb-sdk-utils";
 import * as ckbUtils from "@nervosnetwork/ckb-sdk-utils";
-import { HexString, Address, Script, Hash } from "@ckb-lumos/base";
+import { HexString, Address, Script, Hash, HashType } from "@ckb-lumos/base";
 import { parseAddress, computeScriptHash } from "./scriptUtils";
+import { CellDep } from "ckb-js-toolkit-contrib/src/blockchain";
+import { AccountMap } from "../stores/WalletStore";
+
+export type KeyperRingAccount = {
+  address: Address,
+  lockScript: {
+    codeHash: Hash,
+    hashType: HashType,
+    args: HexString
+  },
+  lockHash: Hash,
+  publicKey: HexString,
+  lockScriptMeta: any
+}
 
 export type Account = {
   lockScript: Script;
   lockHash: Hash;
   address: Address;
   pubKey: HexString;
-  privKey: HexString;
+  privKey?: HexString;
+  lockScriptMeta?: any;
 };
+
+export const parseAccounts = (addresses: KeyperRingAccount[]): Account[] => {
+  return addresses.map((keyperRingAccount) => {
+    return {
+      address: keyperRingAccount.address,
+      lockHash: keyperRingAccount.lockHash,
+      lockScript: {
+        code_hash: keyperRingAccount.lockScript.codeHash,
+        hash_type: keyperRingAccount.lockScript.hashType,
+        args: keyperRingAccount.lockScript.args
+      },
+      pubKey: keyperRingAccount.publicKey
+    }
+  })
+}
 
 export const generateAccountFromPrivateKey = (privKey: HexString): Account => {
   const pubKey = ckbUtils.privateKeyToPublicKey(privKey);

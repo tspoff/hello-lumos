@@ -10,11 +10,11 @@ const Wrapper = styled.div`
   justify-content: space-between;
 `;
 
-const AddressPillbox = (props) => {
+const WalletPillbox = (props) => {
   return (
     <Wrapper onClick={props.onClick}>
-          <AddressView shorten={props.shorten ? true : false} address={props.address}/>
+          <AddressView shorten={props.shorten ? true : false} identicon={props.identicon ? true : false} address={props.address}/>
     </Wrapper>
   );
 };
-export default AddressPillbox;
+export default WalletPillbox;
