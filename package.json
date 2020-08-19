@@ -9,6 +9,10 @@
     "server"
   ],
   "scripts": {
-    "postinstall": "node ./postInstall.js"
+    "postinstall": "node ./postInstall.js",
+    "start": "concurrently --names 'SERVER,CLIENT' --prefix-colors 'yellow,blue' --kill-others 'yarn --cwd ./server start' 'yarn --cwd ./client start'"
+  },
+  "dependencies": {
+    "concurrently": "^5.3.0"
   }
 }
