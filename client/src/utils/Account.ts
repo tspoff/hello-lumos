@@ -6,8 +6,6 @@ import {
 import * as ckbUtils from "@nervosnetwork/ckb-sdk-utils";
 import { HexString, Address, Script, Hash, HashType } from "@ckb-lumos/base";
 import { parseAddress, computeScriptHash } from "./scriptUtils";
-import { CellDep } from "ckb-js-toolkit-contrib/src/blockchain";
-import { AccountMap } from "../stores/WalletStore";
 
 export type KeyperRingAccount = {
   address: Address,
@@ -26,7 +24,6 @@ export type Account = {
   lockHash: Hash;
   address: Address;
   pubKey: HexString;
-  privKey?: HexString;
   lockScriptMeta?: any;
 };
 
@@ -56,7 +53,6 @@ export const generateAccountFromPrivateKey = (privKey: HexString): Account => {
     lockHash,
     address,
     pubKey,
-    privKey,
   };
 };
 
