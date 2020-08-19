@@ -4,5 +4,11 @@
   "author": "tspoff@gmail.com <tspoff@gmail.com>",
   "license": "MIT",
   "private": true,
-  "workspaces": ["client", "server"]
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "postinstall": "node ./postInstall.js"
+  }
 }
