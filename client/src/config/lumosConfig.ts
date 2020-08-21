@@ -119,7 +119,7 @@ const configs = {
 }
 
 export const getConfig = (): Config => {
-  //@ts-ignore
+  // @ts-ignore
   const config = configs[process.env.REACT_APP_LUMOS_CONFIG];
   if (config) return config;
   else throw new Error(`No config profile for specified config ${process.env.REACT_APP_LUMOS_CONFIG} found`);

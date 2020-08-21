@@ -5,7 +5,7 @@ const ActionButton = (props) => {
   const { children, onClick } = props;
 
   return (
-        <Button onClick={onClick}> 
+        <Button onClick={onClick}>
             {children}
         </Button>
   );

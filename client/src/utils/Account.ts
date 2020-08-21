@@ -56,7 +56,7 @@ export const generateAccountFromPrivateKey = (privKey: HexString): Account => {
   };
 };
 
-/* 
+/*
 Code from Address class from Synapse Extension
 Credit: https://github.com/rebase-network/synapse-extension
 */

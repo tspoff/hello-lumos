@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useState, useContext } from "react";
 import styled from "styled-components";
 import { Grid, Row, Col, CenteredRow } from "./common/Grid";
 import Modal from "./common/Modal";
@@ -42,6 +42,7 @@ const WalletModal = () => {
   const { walletState, walletDispatch } = useContext(WalletContext);
   const { balanceState } = useContext(BalanceContext);
   const { modalState, modalDispatch } = useContext(ModalContext);
+  const [error, setError] = useState("");
 
   const dismissModal = () => {
     modalDispatch({
@@ -60,42 +61,38 @@ const WalletModal = () => {
   };
 
   const keyperringAuthRequest = async () => {
-    const token = await walletService.requestAuth(
-      "Hello Lumos - Connection Request"
-    );
-    if (!token) {
-      modalDispatch({
-        type: ModalActions.setError,
-        modalName: Modal.walletModal,
-        error: "Wallet authorization refused",
+    try {
+      setError("");
+
+      const token = await walletService.requestAuth(
+        "Hello Lumos - Connection Request"
+      );
+
+      walletService.setToken(token);
+
+      const accounts = await walletService.getAccounts();
+      const activeAccount = accounts[0]; // Secp256k1 lock script for address
+
+      // Add account info to local store
+      walletDispatch({
+        type: WalletActions.addAccounts,
+        accounts,
       });
+
+      walletDispatch({
+        type: WalletActions.setActiveAccount,
+        lockHash: activeAccount.lockHash,
+      });
+
+      // Change modal to show connection success
+      modalDispatch({
+        type: ModalActions.setModalState,
+        modalName: Modals.walletModal,
+        newState: { activePanel: WalletModalPanels.VIEW_ACCOUNT },
+      });
+    } catch (e) {
+      setError("Wallet authorization refused");
     }
-
-    walletService.setToken(token);
-
-    const accounts = await walletService.getAccounts();
-    const activeAccount = accounts[0]; // Secp256k1 lock script for address
-
-    console.log(accounts);
-    console.log(activeAccount);
-
-    // Add account info to local store
-    walletDispatch({
-      type: WalletActions.addAccounts,
-      accounts,
-    });
-
-    walletDispatch({
-      type: WalletActions.setActiveAccount,
-      lockHash: activeAccount.lockHash,
-    });
-
-    // Change modal to show connection success
-    modalDispatch({
-      type: ModalActions.setModalState,
-      modalName: Modals.walletModal,
-      newState: { activePanel: WalletModalPanels.VIEW_ACCOUNT },
-    });
   };
 
   const account = walletState.activeAccount;
@@ -164,8 +161,6 @@ const WalletModal = () => {
     );
   };
 
-  const walletError = modalState[Modals.walletModal].error;
-
   //@ts-ignore
   return (
     <Modal
@@ -176,16 +171,16 @@ const WalletModal = () => {
         <Grid>
           <HeaderRow>
             <Col size={15}>
-              <bold>{walletText.title}</bold>
+              <p>{walletText.title}</p>
             </Col>
             <Col size={1}>
               <FontAwesomeIcon onClick={dismissModal} icon={faTimes} />
             </Col>
           </HeaderRow>
           <ContentWrapper>{renderActivePanel()}</ContentWrapper>
-          {walletError && (
+          {error && (
             <CenteredRow>
-              <ErrorMsg>{walletError.toString()}</ErrorMsg>
+              <ErrorMsg>{error}</ErrorMsg>
             </CenteredRow>
           )}
         </Grid>

@@ -1,7 +1,6 @@
-import axios from "axios";
-import { HexString, Hash, Address, Script } from "@ckb-lumos/base";
+import { HexString, Hash, Script } from "@ckb-lumos/base";
 import { TransactionSkeletonType } from "@ckb-lumos/helpers";
-import { Api, ResponseCode } from "./Api";
+import { Api } from "./Api";
 import { TxMap } from "../stores/TxTrackerStore";
 
 export interface CkbTransferParams {
@@ -31,6 +30,19 @@ class DappService {
     this.dappServerUri = dappServerUri;
   }
 
+  async getLatestBlock(): Promise<number> {
+    const response = await Api.get(this.dappServerUri, "/latest-block");
+    return Number(response.payload.blockNumber);
+  }
+
+  async fetchTransactionStatuses(txHashes: Hash[]) {
+    console.log("fetchTransactionStatuses", txHashes);
+    const response = await Api.post(this.dappServerUri, "/fetch-tx-status", {
+      txHashes,
+    });
+    return response.payload.txStatuses as TxMap;
+  }
+
   async fetchCkbBalance(lockScript: Script): Promise<BigInt> {
     const response = await Api.post(this.dappServerUri, "/ckb/get-balance", {
       lockScript,
@@ -38,9 +50,7 @@ class DappService {
     return BigInt(response.payload.balance);
   }
 
-  async buildTransferCkbTx(
-    params: CkbTransferParams
-  ): Promise<CkbTransfer> {
+  async buildTransferCkbTx(params: CkbTransferParams): Promise<CkbTransfer> {
     const response = await Api.post(this.dappServerUri, "/ckb/build-transfer", {
       sender: params.sender,
       recipient: params.recipient,
@@ -50,7 +60,7 @@ class DappService {
 
     const data = response.payload;
     data.params = parseCkbTransferParams(data.params);
-    data.description = 'Hello Lumos - CKB Transfer Request' // Description to display on Keyperring
+    data.description = "Hello Lumos - CKB Transfer Request"; // Description to display on Keyperring
     return data;
   }
 
@@ -64,23 +74,6 @@ class DappService {
     });
 
     return response.payload.txHash as Hash;
-  }
-
-  async getLatestBlock(): Promise<Number> {
-    const response = await Api.get(this.dappServerUri, "/latest-block");
-    return Number(response.payload.blockNumber);
-  }
-
-  async fetchTransactionStatuses(txHashes: Hash[]) {
-    console.log('fetchTransactionStatuses',txHashes );
-    const response = await Api.post(
-      this.dappServerUri,
-      "/fetch-tx-status",
-      {
-        txHashes,
-      }
-    );
-    return response.payload.txStatuses as TxMap;
   }
 }
 

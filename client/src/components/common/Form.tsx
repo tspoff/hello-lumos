@@ -28,4 +28,7 @@ export const FormInput = styled.input`
   width: 100%;
   ${sharedStyles};
 `;
-export const FormError = styled.div``;
+
+export const FormError = styled.div`
+  color: red;
+`;

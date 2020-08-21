@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { shortenAddress } from "../utils/formatters";
 import Identicon from "./common/Identicon";
 import { CenteredCol } from "./common/Grid";
-import { CopyButtonWrapper, CopyButton } from "./common/CopyButton";
+import { CopyButton } from "./common/CopyButton";
 
 const Wrapper = styled.div`
   display: flex;

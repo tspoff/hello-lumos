@@ -12,7 +12,7 @@ const WalletPanel = () => {
   const { walletState } = useContext(WalletContext);
   const { modalDispatch } = useContext(ModalContext);
 
-  let walletText = {
+  const walletText = {
     address: "-",
   };
 

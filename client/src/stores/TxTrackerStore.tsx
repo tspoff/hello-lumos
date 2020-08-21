@@ -1,7 +1,7 @@
 import _ from "lodash";
 import React, { createContext, useReducer } from "react";
 
-/* 
+/*
   Store visibility and persistent state for application Modals
 */
 type TxHash = string;
