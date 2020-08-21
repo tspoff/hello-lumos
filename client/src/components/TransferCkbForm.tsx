@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   FormWrapper,
@@ -27,34 +27,42 @@ type Inputs = {
 
 const TransferCkbForm = () => {
   const { walletState } = useContext(WalletContext);
-  const { txTrackerState, txTrackerDispatch } = useContext(TxTrackerContext);
+  const { txTrackerDispatch } = useContext(TxTrackerContext);
+  const [error, setError] = useState("");
 
   const defaultTxFee = getConfig().DEFAULT_TX_FEE;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { register, handleSubmit, watch, errors } = useForm<Inputs>();
   const onSubmit = async (formData) => {
     if (!walletState.activeAccount) return;
 
-    const params: CkbTransferParams = {
-      sender: walletState.activeAccount.address,
-      recipient: formData.recipientAddress,
-      amount: toShannons(formData.amount),
-      txFee: defaultTxFee,
-    };
+    try {
+      const params: CkbTransferParams = {
+        sender: walletState.activeAccount.address,
+        recipient: formData.recipientAddress,
+        amount: toShannons(formData.amount),
+        txFee: defaultTxFee,
+      };
 
-    const tx = await dappService.buildTransferCkbTx(params);
+      const tx = await dappService.buildTransferCkbTx(params);
 
-    const signatures = await walletService.signTransaction(
-      tx,
-      walletState.activeAccount.lockHash
-    );
-    const txHash = await dappService.transferCkb(params, signatures);
+      const signatures = await walletService.signTransaction(
+        tx,
+        walletState.activeAccount.lockHash
+      );
+      const txHash = await dappService.transferCkb(params, signatures);
 
-    txTrackerDispatch({
-      type: TxTrackerActions.SetTrackedTxStatus,
-      txHash,
-      txStatus: TxStatus.PENDING,
-    });
+      setError("");
+
+      txTrackerDispatch({
+        type: TxTrackerActions.SetTrackedTxStatus,
+        txHash,
+        txStatus: TxStatus.PENDING,
+      });
+    } catch (e) {
+      setError(e.toString());
+    }
   };
 
   return (
@@ -81,6 +89,9 @@ const TransferCkbForm = () => {
         <Button disabled={!walletState.activeAccount} type="submit">
           Transfer
         </Button>
+        {error.length > 0 && (
+          <FormError>{error}</FormError>
+        )}
       </Form>
       <TransactionStatusList />
     </FormWrapper>

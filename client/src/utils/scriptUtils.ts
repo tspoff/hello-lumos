@@ -32,7 +32,7 @@ function hexToByteArray(h: HexString): number[] {
 
 export function generateAddress(
   script: Script,
-  { config = undefined }: Options = {}
+  { config }: Options = {}
 ): Address {
   config = config || getConfig();
   const scriptTemplate = Object.values(config.SCRIPTS).find(
@@ -54,7 +54,7 @@ export function generateAddress(
 
 export function parseAddress(
   address: Address,
-  { config = undefined }: Options = {}
+  { config }: Options = {}
 ): Script {
   config = config || getConfig();
   const { prefix, words } = bech32.decode(address, BECH32_LIMIT);

@@ -2,7 +2,7 @@ import React, { createContext, useReducer } from "react";
 import { Transaction } from "../services/DappService";
 import _ from "lodash";
 
-/* 
+/*
   Store visibility and persistent state for application Modals
 */
 export interface Modal {
@@ -30,7 +30,6 @@ export enum Modals {
 
 export enum ModalActions {
   setModalState = "setModalState",
-  setError = "setError"
 }
 
 const initialState: State = {
@@ -44,8 +43,6 @@ const reducer = (state, action) => {
   switch (action.type) {
     case ModalActions.setModalState:
       return setModalState(state, action.modalName, action.newState);
-      case ModalActions.setError:
-        return setModalError(state, action.modalName, action.error);
     default:
       return state;
   }
@@ -55,12 +52,6 @@ const setModalState = (state, modalName: string, modalState: Modal) => {
   const newState = _.cloneDeep(state);
   newState[modalName] = { ...state[modalName], ...modalState };
   newState[modalName].error = undefined; // Clear Error
-  return newState;
-};
-
-const setModalError = (state: State, modalName: string, error: string): State => {
-  const newState = _.cloneDeep(state);
-  newState[modalName] = {...newState[modalName], error};
   return newState;
 };
 

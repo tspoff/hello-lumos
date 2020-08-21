@@ -21,13 +21,14 @@ export const getCkbBalance = async (lockScript: Script) => {
     cells.push(cell);
   }
 
-  for (const cell of cells) {
-    // @ts-ignore
-    const amount = BigInt(cell.cell_output.capacity);
-    balance += amount;
-  }
-
-  return balance;
+  return cells
+    .map((cell) =>
+      BigInt(
+        // @ts-ignore
+        cell.cell_output.capacity
+      )
+    )
+    .reduce((balance, capacity) => (balance = balance += capacity));
 };
 
 export const buildTransferCkbTx = async (params: CkbTransferParams) => {

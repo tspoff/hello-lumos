@@ -63,6 +63,7 @@ export function arrayBufferToHex(arrayBuffer) {
   const buff = new Uint8Array(arrayBuffer);
   const hexOctets: any[] = []; // new Array(buff.length) is even faster (preallocates necessary array size), then use hexOctets[i] instead of .push()
 
+  // tslint:disable-next-line: prefer-for-of
   for (let i = 0; i < buff.length; ++i) hexOctets.push(byteToHex[buff[i]]);
 
   return "0x" + hexOctets.join("");

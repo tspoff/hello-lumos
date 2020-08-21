@@ -12,7 +12,7 @@ const InactiveButton = (props) => {
   const { children } = props;
 
   return (
-        <Button> 
+        <Button>
             {children}
         </Button>
   );

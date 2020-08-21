@@ -1,5 +1,5 @@
 import { Transaction } from "./DappService";
-import { parseAccounts } from "../utils/Account";
+import { Account, parseAccounts } from "../utils/Account";
 import { fromTxSkeleton, toRawWitness } from "../utils/keyperringUtils";
 import { HexString } from "@ckb-lumos/base";
 
@@ -12,25 +12,21 @@ class WalletService {
     this.token = undefined;
   }
 
-  async requestAuth(description): Promise<string | undefined> {
-    try {
-      let res = await fetch(this.walletUri, {
-        method: "POST",
-        body: JSON.stringify({
-          id: 2,
-          jsonrpc: "2.0",
-          method: "auth",
-          params: {
-            description,
-          },
-        }),
-      });
-      res = await res.json();
-      // @ts-ignore
-      return res.result.token as string;
-    } catch (error) {
-      console.error("error", error);
-    }
+  async requestAuth(description): Promise<string> {
+    let res = await fetch(this.walletUri, {
+      method: "POST",
+      body: JSON.stringify({
+        id: 2,
+        jsonrpc: "2.0",
+        method: "auth",
+        params: {
+          description,
+        },
+      }),
+    });
+    res = await res.json();
+    // @ts-ignore
+    return res.result.token as string;
   }
 
   setToken(token: string) {
@@ -63,45 +59,46 @@ class WalletService {
   }
 
   async signTransaction(tx: Transaction, lockHash): Promise<HexString[]> {
-      const rawTx = fromTxSkeleton(tx.txSkeleton);
-      console.log(tx.txSkeleton);
+    const rawTx = fromTxSkeleton(tx.txSkeleton);
+    console.log(tx.txSkeleton);
 
-      rawTx.witnesses[0] = {
-        lock: "",
-        inputType: "",
-        outputType: "",
-      };
+    rawTx.witnesses[0] = {
+      lock: "",
+      inputType: "",
+      outputType: "",
+    };
 
-      console.log(rawTx);
-      let res = await fetch(this.walletUri, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.token}`,
+    console.log(rawTx);
+    let res = await fetch(this.walletUri, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: JSON.stringify({
+        id: 4,
+        jsonrpc: "2.0",
+        method: "sign_transaction",
+        params: {
+          tx: rawTx,
+          lockHash,
+          description: tx.description,
         },
-        body: JSON.stringify({
-          id: 4,
-          jsonrpc: "2.0",
-          method: "sign_transaction",
-          params: {
-            tx: rawTx,
-            lockHash,
-            description: tx.description,
-          },
-        }),
-      });
-      res = await res.json();
-      console.log(res);
-      // @ts-ignore
-      return res.result.tx.witnesses.map(witness => toRawWitness(witness)) as HexString[]; // Return string array of witnesses
-  }
+      }),
+    });
 
-  // signTx(tx: Transaction) {
-  //   const signatures: HexString[] = [];
-  //   tx.txSkeleton.signingEntries.forEach((entry) => {
-  //     signatures.push(this.sign(entry.message));
-  //   });
-  //   return signatures;
-  // }
+    res = await res.json();
+
+    // @ts-ignore
+    if (res.error) {
+      // @ts-ignore
+      throw new Error(res.message);
+    }
+    console.log(res);
+    // @ts-ignore
+    return res.result.tx.witnesses.map((witness) =>
+      toRawWitness(witness)
+    ) as HexString[]; // Return string array of witnesses
+  }
 }
 
 export const walletService = new WalletService(

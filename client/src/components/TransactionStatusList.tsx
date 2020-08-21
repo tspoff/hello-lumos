@@ -6,7 +6,7 @@ import {
   TxStatus,
   txStatusToText,
 } from "../stores/TxTrackerStore";
-import { Row, Col, Grid } from "./common/Grid";
+import { Col, Grid } from "./common/Grid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import { generateCkbExplorerLink } from "../utils/formatters";

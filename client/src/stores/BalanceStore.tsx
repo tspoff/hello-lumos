@@ -2,7 +2,7 @@ import _ from "lodash";
 import React, { createContext, useReducer } from "react";
 
 export interface BalanceMap {
-  [index: string]: bigint;
+  [index: string]: bigint; // Lock Hash -> Balance
 }
 
 export interface State {

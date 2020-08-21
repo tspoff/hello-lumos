@@ -1,7 +1,6 @@
 import React from "react";
 import { HashRouter, Redirect, Route, Switch } from "react-router-dom";
 import styled from "styled-components";
-import logo from "./logo.svg";
 import "./App.css";
 import Header from "./components/Header";
 import WalletModal from "./components/WalletModal";
